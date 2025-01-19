@@ -1,10 +1,12 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from tkinter import PhotoImage
+from PIL import Image, ImageTk
+import requests
 import datetime
 import json
 import os
 from recipe_suggestions import suggest_recipes
+import io
 
 DAY_FOLDER = "DAY20"
 FOOD_FILE = os.path.join(DAY_FOLDER, "food_inventory.json")
@@ -69,7 +71,6 @@ def refresh_inventory():
 
         tree.insert("", "end", values=(item, details["expiry_date"], status))
 
-
 def suggest_recipes_gui():
     today = datetime.date.today()
     expiring_items = [item for item, details in inventory.items() if (datetime.datetime.strptime(details["expiry_date"], "%Y-%m-%d").date() - today).days <= 3 and details["status"] == "Fresh"]
@@ -80,6 +81,10 @@ def suggest_recipes_gui():
 
     recipes = suggest_recipes(expiring_items)
 
+    if not recipes:
+        messagebox.showinfo("No Recipes", "No recipes could be found.")
+        return
+
     recipe_window = tk.Toplevel(root)
     recipe_window.title("Recipe Suggestions")
 
@@ -87,11 +92,24 @@ def suggest_recipes_gui():
         frame = ttk.Frame(recipe_window)
         frame.pack(fill="x", padx=10, pady=5)
 
-        img_label = tk.Label(frame, text=recipe["title"])
-        img_label.pack(side="left")
+        try:
+            response = requests.get(recipe["image"], stream=True)
+            response.raise_for_status()
+            img_data = response.content
 
-        title_label = tk.Label(frame, text=recipe["title"], font=("Arial", 14))
-        title_label.pack(side="left", padx=10)
+            img = Image.open(io.BytesIO(img_data))
+            img = img.resize((100, 100), Image.Resampling.LANCZOS)  # Updated line
+            img = ImageTk.PhotoImage(img)
+
+            img_label = tk.Label(frame, image=img)
+            img_label.image = img
+            img_label.pack(side="left", padx=5)
+
+            title_label = tk.Label(frame, text=recipe["title"], font=("Arial", 14))
+            title_label.pack(side="left", padx=10)
+        except Exception as e:
+            print(f"Error loading image for {recipe['title']}: {e}")
+
 
 root = tk.Tk()
 root.title("Smart Fridge Tracker")
