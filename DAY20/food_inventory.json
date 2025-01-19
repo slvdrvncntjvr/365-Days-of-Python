@@ -1,0 +1,22 @@
+{
+    "Burger": {
+        "expiry_date": "2025-03-23",
+        "status": "Fresh"
+    },
+    "milk": {
+        "expiry_date": "2025-02-03",
+        "status": "Fresh"
+    },
+    "flour": {
+        "expiry_date": "2025-01-22",
+        "status": "Fresh"
+    },
+    "apple": {
+        "expiry_date": "2025-01-20",
+        "status": "Fresh"
+    },
+    "sugar": {
+        "expiry_date": "2025-01-20",
+        "status": "Fresh"
+    }
+}
