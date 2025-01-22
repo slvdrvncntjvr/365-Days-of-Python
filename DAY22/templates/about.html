@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}About Me - My Portfolio{% endblock %}
+
+{% block content %}
+<section class="about">
+    <h1>About Me</h1>
+    <img src="{{ url_for('static', filename='images/profile.jpg') }}" alt="Profile Picture">
+    <p>
+        Hello! I'm Vincent, a passionate IT student with a focus on cybersecurity, programming, and technology. 
+        Welcome to my online space where I share my journey, achievements, and projects.
+    </p>
+</section>
+{% endblock %}
