@@ -1,5 +1,9 @@
 import csv
 import datetime
+import os
+
+DAY_FOLDER = "DAY23"
+FOOD_FILE = os.path.join(DAY_FOLDER, "mood_data.csv")
 
 def display_menu():
     print("\nMood Tracker")
@@ -11,7 +15,7 @@ def log_mood():
     notes = input("Any additional notes? ")
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     
-    with open("mood_data.csv", "a", newline='') as file:
+    with open(FOOD_FILE, "a", newline='') as file:
         writer = csv.writer(file)
         writer.writerow([date, mood, notes])
     print("Mood logged!")
