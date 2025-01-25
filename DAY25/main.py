@@ -6,9 +6,10 @@ from collections import Counter
 import sqlite3
 import os
 
-# Initialize database
+
 DAY_FOLDER = "DAY25"
 DB_FILE = os.path.join(DAY_FOLDER, "database.db")
+TXT_FILE = os.path.join(DAY_FOLDER, "typed_text.txt")
 
 def initialize_database():
     conn = sqlite3.connect(DB_FILE)
@@ -54,7 +55,6 @@ def get_suggestions(last_word):
     conn.close()
     return suggestions
 
-# GUI Application
 class TypingAssistantApp:
     def __init__(self, root):
         self.root = root
@@ -63,38 +63,31 @@ class TypingAssistantApp:
 
         self.history = []
 
-        # Entry widget for typing
         self.text_input = tk.Entry(self.root, font=("Arial", 14))
         self.text_input.pack(pady=20, fill=tk.X, padx=10)
         self.text_input.bind("<KeyRelease>", self.on_key_release)
 
-        # Suggestions label
         self.suggestions_label = tk.Label(self.root, text="Suggestions: ", font=("Arial", 12), anchor="w")
         self.suggestions_label.pack(fill=tk.X, padx=10)
 
-        # Typed text display
         self.text_display = tk.Text(self.root, font=("Arial", 12), wrap=tk.WORD, state=tk.DISABLED, height=10)
         self.text_display.pack(pady=20, fill=tk.BOTH, padx=10, expand=True)
 
-        # Save Button
         save_button = ttk.Button(self.root, text="Save Text", command=self.save_text)
         save_button.pack(pady=10)
 
     def on_key_release(self, event):
         typed_text = self.text_input.get().strip()
         if typed_text and event.keysym == "space":
-            # Tokenize and process
             words = word_tokenize(typed_text)
             if len(words) > 1:
                 save_bigrams_to_db(words[-2:])
             self.history.extend(words)
 
-            # Clear the input
             self.update_display()
             self.text_input.delete(0, tk.END)
 
         elif typed_text:
-            # Provide suggestions
             words = word_tokenize(typed_text)
             last_word = words[-1] if words else ""
             suggestions = get_suggestions(last_word)
@@ -107,11 +100,10 @@ class TypingAssistantApp:
         self.text_display.config(state=tk.DISABLED)
 
     def save_text(self):
-        with open("typed_text.txt", "w", encoding="utf-8") as file:
+        with open(TXT_FILE, "w", encoding="utf-8") as file:
             file.write(" ".join(self.history))
         tk.messagebox.showinfo("Saved", "Your text has been saved!")
 
-# Initialize
 if __name__ == "__main__":
     if not os.path.exists(DB_FILE):
         initialize_database()
