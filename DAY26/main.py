@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import random
 import os
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageTk
 
 SAVE_DIR = "generated_art"
 os.makedirs(SAVE_DIR, exist_ok=True)
@@ -11,7 +11,7 @@ class TextToArtApp:
     def __init__(self, root):
         self.root = root
         self.root.title("AI-Powered Text-to-Art Generator")
-        self.root.geometry("600x400")
+        self.root.geometry("600x500")
 
         title = tk.Label(root, text="Text-to-Art Generator (somehow)", font=("Arial", 18, "bold"))
         title.pack(pady=10)
@@ -19,7 +19,6 @@ class TextToArtApp:
         prompt_label = tk.Label(root, text="Enter a prompt to inspire your art: (keywords)", font=("Arial", 12))
         prompt_label.pack(pady=5)
 
-        
         self.prompt_input = tk.Entry(root, font=("Arial", 12), width=40)
         self.prompt_input.pack(pady=5)
 
@@ -42,12 +41,11 @@ class TextToArtApp:
         messagebox.showinfo("Success", f"Art generated and saved as {art_file}")
 
     def create_art(self, prompt):
-        
         img_size = (500, 500)
         img = Image.new("RGB", img_size, "white")
         draw = ImageDraw.Draw(img)
 
-        
+        # added theme map
         theme_map = {
             "sunset": {"colors": ["#FF4500", "#FF6347", "#FFD700"], "shapes": ["ellipse", "rectangle"]},
             "ocean": {"colors": ["#1E90FF", "#00CED1", "#4682B4"], "shapes": ["ellipse", "line"]},
@@ -55,7 +53,7 @@ class TextToArtApp:
             "love": {"colors": ["#FF69B4", "#FF1493", "#FFC0CB"], "shapes": ["ellipse", "rectangle"]},
             "galaxy": {"colors": ["#8A2BE2", "#4B0082", "#483D8B"], "shapes": ["ellipse", "line"]},
             "default": {"colors": ["#000000", "#808080", "#FFFFFF"], "shapes": ["ellipse", "rectangle", "line"]}
-            }
+        }
 
         selected_theme = theme_map.get(
             next((key for key in theme_map if key in prompt.lower()), "default")
@@ -72,26 +70,24 @@ class TextToArtApp:
             y1, y2 = min(y1, y2), max(y1, y2)
 
             if shape_type == "ellipse":
-                draw.ellipse([x1, y1, x2, y2], fill=color, outline=color)
+                draw.ellipse([x1, y1, x2, y2], fill=color, outline=None)
             elif shape_type == "rectangle":
-                draw.rectangle([x1, y1, x2, y2], fill=color, outline=color)
+                draw.rectangle([x1, y1, x2, y2], fill=color, outline=None)
             elif shape_type == "line":
                 draw.line([x1, y1, x2, y2], fill=color, width=random.randint(1, 5))
 
-        
+
         font = ImageFont.load_default()
         draw.text((10, img_size[1] - 20), prompt, fill="black", font=font)
 
-        
         filename = f"{SAVE_DIR}/{prompt.replace(' ', '_')}_{random.randint(1000, 9999)}.png"
         img.save(filename)
 
         return filename
 
-
     def display_art(self, art_file):
         img = Image.open(art_file).resize((300, 300))
-        self.tk_img = tk.PhotoImage(file=art_file) 
+        self.tk_img = ImageTk.PhotoImage(img)
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.tk_img)
 
 
