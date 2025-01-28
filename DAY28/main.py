@@ -8,7 +8,7 @@ import os
 
 DAY_FOLDER = "DAY28"
 DATA_FILE = os.path.join(DAY_FOLDER, r"data/world_data.csv")
-MAP_FILE = os.path.join(DAY_FOLDER, r"data/gistfilel.js")
+MAP_FILE = os.path.join(DAY_FOLDER, r"data/10m_admin_0_countries.geojson")  # Updated to GeoJSON file
 
 class WorldDashboardApp:
     def __init__(self, root):
@@ -23,7 +23,7 @@ class WorldDashboardApp:
             self.data = pd.DataFrame(columns=["Country", "Population", "GDP", "Continent"])
         
         try:
-            self.world_map = gpd.read_file(MAP_FILE)
+            self.world_map = gpd.read_file(MAP_FILE)  # Load GeoJSON file
         except Exception as e:
             messagebox.showerror("Error", f"Could not load map file: {e}")
             self.world_map = gpd.GeoDataFrame()
@@ -63,7 +63,7 @@ class WorldDashboardApp:
             return
         
         country_data = country_data.iloc[0]
-        country_map = self.world_map[self.world_map["ADMIN"] == country]
+        country_map = self.world_map[self.world_map["ADMIN"] == country]  # Ensure column name matches
     
         self.ax.clear()
         base_map = self.world_map.plot(ax=self.ax, color="lightgrey", edgecolor="black")
