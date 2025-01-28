@@ -78,6 +78,9 @@ class WorldDashboardApp:
             f"Population: {country_data['Population']:,}\n"
             f"GDP (in USD): ${country_data['GDP']:,}\n"
             f"Continent: {country_data['Continent']}\n"
+            f"Capital: {country_data['Capital']}\n"
+            f"Life Expectancy: {country_data['LifeExpectancy']} years\n"
+            f"Area: {country_data['Area']:,} sq km\n"
         )
         self.stats_label.config(text=stats_text)
 
