@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlalchemy
+pandas
+numpy
+scikit-learn
+httpx
+pytest
+speechrecognition
+pyaudio
+matplotlib
+geopandas
