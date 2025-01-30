@@ -2,7 +2,6 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import random
-import os
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -17,7 +16,9 @@ RESPONSES = {
     "color": ["I like all colors, but I think blue is calming.", 
               "Colors are fascinating, aren't they?"],
     "unknown": ["I'm not sure I understand. Can you rephrase that?", 
-                "Sorry, I don't know how to respond to that."]
+                "Sorry, I don't know how to respond to that."],
+    "yue": ["Are you talking about the love of your life? How is she?", 
+              "I hope Yue is doing well. She sounds like a great person!"]
 }
 
 KEYWORDS = {
@@ -29,26 +30,40 @@ KEYWORDS = {
     "feeling": "mood",
     "color": "color",
     "favourite": "color",
-    "favorite": "color"
+    "favorite": "color",
+    "yue": "yue",
+    "Yue": "yue"
 }
 
+# hindi ko na import punkt 
+# remind self to import punkt
 def clean_and_tokenize(input_text):
     tokens = word_tokenize(input_text)
     filtered_tokens = [word for word in tokens if word not in stop_words]
     return filtered_tokens
 
 def get_response(user_input):
-    user_input = user_input.lower()
+    tokens = clean_and_tokenize(user_input)
+    
+    for token in tokens:
+        if token in KEYWORDS:
+            category = KEYWORDS[token]
+            return random.choice(RESPONSES[category])
+    
+    return random.choice(RESPONSES["unknown"])
 
-    if "hello" in user_input or "hi" in user_input:
-        return random.choice(["Hi there!", "Hello!", "Hey!"])
-    elif "how are you" in user_input:
-        return "I'm just a bot, but I'm doing great! How about you?"
-    elif "name" in user_input:
-        return "I'm Chatpy, your friendly chatbot."
-    elif "favorite color" in user_input:
-        return "Colors are fascinating, but I think blue is calming!"
-    elif "bye" in user_input:
-        return "Goodbye! Have a great day!"
-    else:
-        return "I'm not sure I understand. Can you rephrase that?"
+def main():
+    print("Chatbot: Hi! I'm Chatpy, your friendly chatbot. Type 'bye' to end the chat.")
+    
+    while True:
+        user_input = input("\nYou: ").strip().lower()
+        
+        if user_input == "bye":
+            print("Chatbot: Goodbye! Have a great day!")
+            break
+        
+        response = get_response(user_input)
+        print(f"Chatbot: {response}")
+
+if __name__ == "__main__":
+    main()
