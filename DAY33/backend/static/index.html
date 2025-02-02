@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Threat Monitor</title>
+</head>
+<body>
+    <h1>Live Cyber Threats</h1>
+    <ul id="threat-list"></ul>
+
+    <script>
+        const ws = new WebSocket("ws://127.0.0.1:8000/ws");
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const listItem = document.createElement("li");
+            listItem.textContent = `${data.timestamp} - ${data.event_type} from ${data.source_ip}: ${data.details}`;
+            document.getElementById("threat-list").prepend(listItem);
+        };
+    </script>
+</body>
+</html>
