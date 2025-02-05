@@ -1,109 +1,67 @@
 import asyncio
 import websockets
-import json
-import threading
-import speech_recognition as sr
-from flask import Flask, render_template_string
+from flask import Flask
 from cryptography.fernet import Fernet
+import threading
+
 
 SECRET_KEY = Fernet.generate_key()
 cipher = Fernet(SECRET_KEY)
-tasks = []
 
 app = Flask(__name__)
 
-HTML_PAGE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Task Manager</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-</head>
-<body>
-    <h1>Voice-Controlled Encrypted Task Manager</h1>
-    <button onclick="startListening()">🎤 Speak</button>
-    <input type="text" id="taskInput" placeholder="Type a task">
-    <button onclick="sendTask()">Add Task</button>
-    <ul id="taskList"></ul>
-    <script>
-        const SECRET_KEY = "{{ secret_key.decode() }}";
-        let ws = new WebSocket("ws://127.0.0.1:8000");
-
-        function encryptMessage(message) {
-            return CryptoJS.AES.encrypt(message, SECRET_KEY).toString();
-        }
-
-        function decryptMessage(encryptedMessage) {
-            let bytes = CryptoJS.AES.decrypt(encryptedMessage, SECRET_KEY);
-            return bytes.toString(CryptoJS.enc.Utf8);
-        }
-
-        ws.onmessage = (event) => {
-            let decryptedData = decryptMessage(event.data);
-            let taskList = document.getElementById("taskList");
-            taskList.innerHTML = "";
-            JSON.parse(decryptedData).forEach(task => {
-                let li = document.createElement("li");
-                li.textContent = task;
-                taskList.appendChild(li);
-            });
-        };
-
-        function sendTask() {
-            let task = document.getElementById("taskInput").value;
-            let encryptedTask = encryptMessage(task);
-            ws.send(encryptedTask);
-            document.getElementById("taskInput").value = "";
-        }
-
-        function startListening() {
-            let recognition = new webkitSpeechRecognition() || new SpeechRecognition();
-            recognition.lang = "en-US";
-            recognition.start();
-            recognition.onresult = (event) => {
-                let task = event.results[0][0].transcript;
-                let encryptedTask = encryptMessage(task);
-                ws.send(encryptedTask);
-            };
-        }
-    </script>
-</body>
-</html>
-"""
-
-async def handle_client(websocket, path):
-    global tasks
-    async for encrypted_message in websocket:
-        try:
-            decrypted_message = cipher.decrypt(encrypted_message.encode()).decode()
-            if decrypted_message.lower() == "list tasks":
-                encrypted_response = cipher.encrypt(json.dumps(tasks).encode()).decode()
-                await websocket.send(encrypted_response)
-            elif decrypted_message.startswith("complete "):
-                task_to_remove = decrypted_message.replace("complete ", "").strip()
-                tasks = [task for task in tasks if task != task_to_remove]
-                encrypted_response = cipher.encrypt(json.dumps(tasks).encode()).decode()
-                await websocket.send(encrypted_response)
-            else:
-                tasks.append(decrypted_message)
-                encrypted_response = cipher.encrypt(json.dumps(tasks).encode()).decode()
-                await websocket.send(encrypted_response)
-        except Exception:
-            await websocket.send(cipher.encrypt(json.dumps(["Invalid encryption!"]).encode()).decode())
-
-async def websocket_server():
-    server = await websockets.serve(handle_client, "127.0.0.1", 8000)
-    await server.wait_closed()
-
-def start_flask():
-    app.run(host="127.0.0.1", port=5000)
-
 @app.route("/")
 def index():
-    return render_template_string(HTML_PAGE, secret_key=SECRET_KEY)
+    return """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>WebSocket Chat</title>
+        <script>
+            let ws = new WebSocket("ws://127.0.0.1:8000/ws");
+
+            ws.onmessage = (event) => {
+                let messageBox = document.getElementById("messages");
+                messageBox.innerHTML += "<p><b>Server:</b> " + event.data + "</p>";
+            };
+
+            function sendMessage() {
+                let input = document.getElementById("messageInput").value;
+                ws.send(input);
+                document.getElementById("messages").innerHTML += "<p><b>You:</b> " + input + "</p>";
+                document.getElementById("messageInput").value = "";
+            }
+        </script>
+    </head>
+    <body>
+        <h2>WebSocket Chat</h2>
+        <div id="messages"></div>
+        <input type="text" id="messageInput" placeholder="Type a message">
+        <button onclick="sendMessage()">Send</button>
+    </body>
+    </html>
+    """
+
+async def handle_client(websocket, path):
+    try:
+        async for message in websocket:
+            encrypted_message = cipher.encrypt(message.encode())
+            decrypted_message = cipher.decrypt(encrypted_message).decode()
+            print(f"Received: {decrypted_message}")
+
+            await websocket.send(f"Encrypted: {encrypted_message.decode()} | Decrypted: {decrypted_message}")
+    except Exception as e:
+        print("Connection error:", e)
+
+async def websocket_server():
+    async with websockets.serve(handle_client, "127.0.0.1", 8000):
+        await asyncio.Future() 
+
+def run_flask():
+    app.run("127.0.0.1", 5000, use_reloader=False)
 
 if __name__ == "__main__":
-    threading.Thread(target=start_flask).start()
+    threading.Thread(target=run_flask, daemon=True).start()
     asyncio.run(websocket_server())
