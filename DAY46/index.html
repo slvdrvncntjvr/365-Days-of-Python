@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Witty Poll</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background: #f9f9f9; }
+        h1 { text-align: center; }
+        .poll-container { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .option { margin: 10px 0; }
+        button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
+        #results { border: 1px solid #ccc; padding: 10px; margin-top: 20px; white-space: pre-wrap; background: #eef; }
+    </style>
+</head>
+<body>
+    <div class="poll-container">
+        <h1>Poll</h1>
+        <p>What is your favorite food?</p>
+        <div class="option">
+            <input type="radio" id="option1" name="poll" value="Pizza">
+            <label for="option1">Pizza</label>
+        </div>
+        <div class="option">
+            <input type="radio" id="option2" name="poll" value="Burger">
+            <label for="option2">Burger</label>
+        </div>
+        <div class="option">
+            <input type="radio" id="option3" name="poll" value="Sushi">
+            <label for="option3">Sushi</label>
+        </div>
+        <div class="option">
+            <input type="radio" id="option4" name="poll" value="Pasta">
+            <label for="option4">Pasta</label>
+        </div>
+        <button onclick="submitVote()">Submit Vote</button>
+        <h2>Poll Results:</h2>
+        <div id="results">Waiting for results...</div>
+    </div>
+    <script>
+        let ws = new WebSocket("ws://127.0.0.1:8000/ws");
+        ws.onmessage = (event) => {
+            document.getElementById("results").innerText = event.data;
+        };
+
+        async function submitVote() {
+            let selectedOption = document.querySelector('input[name="poll"]:checked');
+            if (!selectedOption) {
+                alert("Please select an option.");
+                return;
+            }
+            let option = selectedOption.value;
+            await fetch("/vote", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ option })
+            });
+        }
+    </script>
+</body>
+</html>
