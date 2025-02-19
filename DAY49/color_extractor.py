@@ -19,3 +19,6 @@ def get_palette_image(colors, swatch_size=50):
         swatch = Image.new("RGB", (swatch_size, swatch_size), tuple(color))
         palette.paste(swatch, (i * swatch_size, 0))
     return palette
+
+def rgb_to_hex(color):
+    return '#{:02x}{:02x}{:02x}'.format(*color)
