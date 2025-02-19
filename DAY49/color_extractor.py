@@ -22,3 +22,7 @@ def get_palette_image(colors, swatch_size=50):
 
 def rgb_to_hex(color):
     return '#{:02x}{:02x}{:02x}'.format(*color)
+
+def save_palette_image(colors, save_path, swatch_size=50):
+    palette = get_palette_image(colors, swatch_size)
+    palette.save(save_path)
