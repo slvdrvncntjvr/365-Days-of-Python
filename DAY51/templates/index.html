@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Virtual Pet - Day 51</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Virtual Pet: Zoa</h1>
+    <div class="status">
+      <p>Hunger: <span id="hunger">50</span></p>
+      <p>Happiness: <span id="happiness">50</span></p>
+    </div>
+    <div class="actions">
+      <button onclick="feedPet()">Feed</button>
+      <button onclick="playWithPet()">Play</button>
+    </div>
+    <div class="pet-image">
+      <img src="https://play-lh.googleusercontent.com/xToRFw-mqA18HtizgutV0K1IouakfR8iJ3PW75u-1n1oxbP7hVfBMlgHWIwuUYKKS_s" alt="Virtual Pet">
+    </div>
+  </div>
+
+  <script>
+    function updateStatus() {
+      fetch("/status")
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("hunger").innerText = data.hunger;
+          document.getElementById("happiness").innerText = data.happiness;
+        });
+    }
+    
+    function feedPet() {
+      fetch("/feed", { method: "POST" })
+        .then(response => response.json())
+        .then(data => updateStatus());
+    }
+    
+    function playWithPet() {
+      fetch("/play", { method: "POST" })
+        .then(response => response.json())
+        .then(data => updateStatus());
+    }
+    
+    updateStatus();
+    setInterval(updateStatus, 60000);
+  </script>
+</body>
+</html>
