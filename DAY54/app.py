@@ -1,95 +1,95 @@
-import tkinter as tk
+
 import random
-import heapq
 import math
+import matplotlib.pyplot as plt
 
-CELL_SIZE = 20
-COLS = 30
-ROWS = 20
+CELL_SIZE = 20  
 
-class Cell:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.walls = {"top": True, "right": True, "bottom": True, "left": True}
-        self.visited = False
+class Person:
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+        self.happiness = random.uniform(50, 100)
+        self.energy = random.uniform(50, 100)
+        self.social = random.uniform(30, 70)
 
-    def remove_wall(self, other, wall):
-        self.walls[wall] = False
-        opposite = {"top": "bottom", "right": "left", "bottom": "top", "left": "right"}
-        other.walls[opposite[wall]] = False
+    def interact(self, other):
+        factor = (self.social + other.social) / 200
+        delta = random.uniform(-5, 5) * factor
+        self.happiness = min(100, max(0, self.happiness + delta))
+        other.happiness = min(100, max(0, other.happiness + delta))
+        cost = random.uniform(1, 3)
+        self.energy = max(0, self.energy - cost)
+        other.energy = max(0, other.energy - cost)
 
-class MazeGenerator:
-    def __init__(self, cols, rows):
-        self.cols = cols
-        self.rows = rows
-        self.grid = [[Cell(x, y) for y in range(rows)] for x in range(cols)]
-        self.stack = []
+    def daily_decay(self):
+        self.energy = max(0, self.energy - random.uniform(0, 2))
+        self.happiness = max(0, self.happiness - random.uniform(0, 1))
 
-    def index(self, x, y):
-        if x < 0 or y < 0 or x >= self.cols or y >= self.rows:
-            return None
-        return self.grid[x][y]
+class Society:
+    def __init__(self, population_size):
+        self.population = [Person(i, f"Person_{i}") for i in range(population_size)]
+        self.day = 0
+        self.avg_happiness_history = []
+        self.avg_energy_history = []
+        self.avg_social_history = []
 
-    def get_neighbors(self, cell):
-        neighbors = []
-        directions = [("top", (0, -1)), ("right", (1, 0)), ("bottom", (0, 1)), ("left", (-1, 0))]
-        for direction, (dx, dy) in directions:
-            neighbor = self.index(cell.x + dx, cell.y + dy)
-            if neighbor and not neighbor.visited:
-                neighbors.append((direction, neighbor))
-        return neighbors
+    def simulate_day(self):
+        interactions = random.randint(3, 7)
+        for person in self.population:
+            for _ in range(interactions):
+                other = random.choice(self.population)
+                if other.id != person.id:
+                    person.interact(other)
+            person.daily_decay()
+        self.day += 1
+        self.record_metrics()
 
-    def generate_maze(self):
-        current = self.grid[0][0]
-        current.visited = True
-        while True:
-            neighbors = self.get_neighbors(current)
-            if neighbors:
-                direction, next_cell = random.choice(neighbors)
-                next_cell.visited = True
-                self.stack.append(current)
-                current.remove_wall(next_cell, direction)
-                current = next_cell
-            elif self.stack:
-                current = self.stack.pop()
-            else:
-                break
+    def record_metrics(self):
+        total_happiness = sum(p.happiness for p in self.population)
+        total_energy = sum(p.energy for p in self.population)
+        total_social = sum(p.social for p in self.population)
+        n = len(self.population)
+        self.avg_happiness_history.append(total_happiness / n)
+        self.avg_energy_history.append(total_energy / n)
+        self.avg_social_history.append(total_social / n)
 
-class MazeSolver:
-    def __init__(self, grid):
-        self.grid = grid
-        self.cols = len(grid)
-        self.rows = len(grid[0])
+    def run_simulation(self, days):
+        for _ in range(days):
+            self.simulate_day()
 
-    def heuristic(self, cell, goal):
-        return abs(cell.x - goal.x) + abs(cell.y - goal.y)
-
-    def get_neighbors(self, cell):
-        neighbors = []
-        directions = {
-            "top": (0, -1),
-            "right": (1, 0),
-            "bottom": (0, 1),
-            "left": (-1, 0)
+    def get_metrics(self):
+        return {
+            "avg_happiness": self.avg_happiness_history,
+            "avg_energy": self.avg_energy_history,
+            "avg_social": self.avg_social_history
         }
-        for direction, (dx, dy) in directions.items():
-            if not cell.walls[direction]:
-                neighbor = self.grid[cell.x + dx][cell.y + dy]
-                neighbors.append(neighbor)
-        return neighbors
 
-    def solve(self, start, goal):
-        open_set = []
-        heapq.heappush(open_set, (0, start))
-        came_from = {}
-        g_score = {start: 0}
-        f_score = {start: self.heuristic(start, goal)}
+def plot_metrics(metrics):
+    days = range(1, len(metrics["avg_happiness"]) + 1)
+    plt.figure(figsize=(10,6))
+    plt.plot(days, metrics["avg_happiness"], label="Average Happiness", color="orange", linewidth=2)
+    plt.plot(days, metrics["avg_energy"], label="Average Energy", color="blue", linewidth=2)
+    plt.plot(days, metrics["avg_social"], label="Average Social", color="green", linewidth=2)
+    plt.xlabel("Day")
+    plt.ylabel("Value")
+    plt.title("Society Metrics Over Time")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
-        while open_set:
-            current = heapq.heappop(open_set)[1]
-            if current == goal:
-                return self.reconstruct_path(came_from, current)
-            for neighbor in self.get_neighbors(current):
-                tentative_g_score = g_score.get(current, float('inf')) + 1
-                i
+def main():
+    population_size = 100
+    simulation_days = 50
+    society = Society(population_size)
+    society.run_simulation(simulation_days)
+    metrics = society.get_metrics()
+    print("Simulation complete!")
+    print("Final Average Happiness:", metrics["avg_happiness"][-1])
+    print("Final Average Energy:", metrics["avg_energy"][-1])
+    print("Final Average Social:", metrics["avg_social"][-1])
+    plot_metrics(metrics)
+
+if __name__ == "__main__":
+    main()
