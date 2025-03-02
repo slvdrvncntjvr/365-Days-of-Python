@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collaborative Graffiti Board</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>Collaborative Graffiti Board</h1>
+  <canvas id="drawingCanvas" width="800" height="600"></canvas>
+  <script>
+    const socket = io();
+    const canvas = document.getElementById('drawingCanvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    let prevX = 0, prevY = 0;
+
+    canvas.addEventListener('mousedown', (e) => {
+      drawing = true;
+      prevX = e.offsetX;
+      prevY = e.offsetY;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!drawing) return;
+      const currX = e.offsetX;
+      const currY = e.offsetY;
+      drawLine(prevX, prevY, currX, currY, true);
+      prevX = currX;
+      prevY = currY;
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      drawing = false;
+    });
+
+    canvas.addEventListener('mouseout', () => {
+      drawing = false;
+    });
+
+    function drawLine(x1, y1, x2, y2, emitEvent = false) {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.closePath();
+      if (emitEvent) {
+        socket.emit('draw_event', { x1, y1, x2, y2 });
+      }
+    }
+
+    socket.on('draw_event', (data) => {
+      drawLine(data.x1, data.y1, data.x2, data.y2, false);
+    });
+  </script>
+</body>
+</html>
