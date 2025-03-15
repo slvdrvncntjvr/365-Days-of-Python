@@ -14,16 +14,6 @@ Welcome to the System Resource Monitor! This command-line interface (CLI) tool a
 - [Contributing](#contributing)
 - [License](#license)
 
-## Installation
-
-To get started, clone the repository and install the required dependencies:
-
-```bash
-git clone https://github.com/yourusername/system-resource-monitor.git
-cd system-resource-monitor
-pip install -r requirements.txt
-```
-
 ## Usage
 
 You can run the application using the following command:
