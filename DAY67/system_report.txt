@@ -1,0 +1,42 @@
+System Monitor Report - 2025-03-15 19:45:44
+
+SYSTEM INFORMATION
+------------------
+System: Windows
+Node: LAPTOP-0UJ6GTG9
+Release: 11
+Version: 10.0.22631
+Machine: AMD64
+Processor: Intel64 Family 6 Model 154 Stepping 4, GenuineIntel
+Python_version: 3.12.9
+Boot_time: 2025-03-15 12:48:41
+
+CPU INFORMATION
+--------------
+Usage: 8.2%
+Cores: 12
+Frequency: 1300.0 MHz
+
+MEMORY INFORMATION
+------------------
+Total: 15.68 GB
+Available: 4.04 GB
+Used: 11.64 GB (74.2%)
+Swap Total: 4.38 GB
+Swap Used: 186.93 MB (4.2%)
+
+DISK INFORMATION
+----------------
+
+C:\ (C:\)
+  File System: NTFS
+  Total: 475.88 GB
+  Used: 227.54 GB (47.8%)
+  Free: 248.35 GB
+
+NETWORK INFORMATION
+-------------------
+Total Received: 4.97 GB
+Total Sent: 320.73 MB
+Download Rate: 10.66 KB/s
+Upload Rate: 3.33 KB/s
